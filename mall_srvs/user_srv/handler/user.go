@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/sha512"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/anaskhan96/go-password-encoder"
 	"google.golang.org/grpc/codes"
@@ -17,15 +19,16 @@ import (
 )
 
 type UserServer struct {
+	proto.UnimplementedUserServer
 }
 
 func ModelToUserInfoResponse(user model.User) *proto.UserInfoResponse {
 	userInfoRsp := &proto.UserInfoResponse{
 		Id:       user.ID,
-		PassWord: user.Password,
 		NickName: user.NickName,
 		Gender:   user.Gender,
 		Role:     int32(user.Role),
+		Mobile:   user.Mobile,
 	}
 	if user.Birthday != nil {
 		userInfoRsp.BirthDay = uint64(user.Birthday.Unix())
@@ -55,7 +58,7 @@ func Paginate(page int, pageSize int) func(db *gorm.DB) *gorm.DB {
 // GetUserList user manager获取用户列
 func (u *UserServer) GetUserList(ctx context.Context, req *proto.PageInfo) (*proto.UserListResponse, error) {
 	var users []model.User
-	res := global.DB.Find(&users)
+	res := global.DB.WithContext(ctx).Find(&users)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -63,7 +66,7 @@ func (u *UserServer) GetUserList(ctx context.Context, req *proto.PageInfo) (*pro
 	rsp := &proto.UserListResponse{}
 	rsp.Total = int32(res.RowsAffected)
 
-	global.DB.Scopes(Paginate(int(req.Pn), int(req.PSize))).Find(&users)
+	global.DB.WithContext(ctx).Scopes(Paginate(int(req.Pn), int(req.PSize))).Find(&users)
 
 	for _, user := range users {
 		userInfoRsp := ModelToUserInfoResponse(user)
@@ -76,7 +79,7 @@ func (u *UserServer) GetUserList(ctx context.Context, req *proto.PageInfo) (*pro
 // GetUserByMobile 通过Mobile 查询用户
 func (u *UserServer) GetUserByMobile(ctx context.Context, req *proto.MobileRequest) (*proto.UserInfoResponse, error) {
 	var user model.User
-	res := global.DB.Where(&model.User{Mobile: req.Mobile}).First(&user)
+	res := global.DB.WithContext(ctx).Where(&model.User{Mobile: req.Mobile}).First(&user)
 	if res.RowsAffected == 0 {
 		return nil, status.Error(codes.NotFound, "not found user by mobile")
 	}
@@ -91,7 +94,7 @@ func (u *UserServer) GetUserByMobile(ctx context.Context, req *proto.MobileReque
 // GetUserById 通过id查找用户
 func (u *UserServer) GetUserById(ctx context.Context, req *proto.IdRequest) (*proto.UserInfoResponse, error) {
 	var user model.User
-	res := global.DB.First(&user, req.Id)
+	res := global.DB.WithContext(ctx).First(&user, req.Id)
 	if res.RowsAffected == 0 {
 		return nil, status.Error(codes.NotFound, "not found user by mobile")
 	}
@@ -106,11 +109,11 @@ func (u *UserServer) GetUserById(ctx context.Context, req *proto.IdRequest) (*pr
 // CreateUser 新建用户
 func (u *UserServer) CreateUser(ctx context.Context, req *proto.CreateUserInfo) (*proto.UserInfoResponse, error) {
 	var user model.User
-	res := global.DB.Where(&model.User{Mobile: req.Mobile}).First(&user)
+	res := global.DB.WithContext(ctx).Where(&model.User{Mobile: req.Mobile}).First(&user)
 	if res.RowsAffected == 1 {
 		return nil, status.Error(codes.AlreadyExists, "mobile is already exists")
 	}
-	if res.Error != nil {
+	if res.Error != nil && res.Error != gorm.ErrRecordNotFound {
 		return nil, status.Error(codes.Internal, res.Error.Error())
 	}
 
@@ -122,7 +125,7 @@ func (u *UserServer) CreateUser(ctx context.Context, req *proto.CreateUserInfo) 
 	salt, encodePwd := password.Encode(req.PassWord, options)
 	user.Password = fmt.Sprintf("$pdkdf2-sha512$%s$%s", salt, encodePwd)
 
-	res = global.DB.Create(&user)
+	res = global.DB.WithContext(ctx).Create(&user)
 	if res.Error != nil {
 		return nil, status.Error(codes.Internal, res.Error.Error())
 	}
@@ -132,13 +135,33 @@ func (u *UserServer) CreateUser(ctx context.Context, req *proto.CreateUserInfo) 
 }
 
 func (u *UserServer) UpdateUser(ctx context.Context, req *proto.UpdateUserInfo) (*emptypb.Empty, error) {
-	panic("implement me")
+	var user model.User
+	res := global.DB.WithContext(ctx).First(&user, req.Id)
+	if res.RowsAffected == 0 {
+		return nil, status.Error(codes.NotFound, "not found user by id")
+	}
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	birthday := time.Unix(int64(req.BirthDay), 0)
+	user.Birthday = &birthday
+	user.Gender = req.Gender
+	user.NickName = req.NickName
+
+	res = global.DB.WithContext(ctx).Save(&user)
+	if res.Error != nil {
+		return nil, status.Error(codes.Internal, res.Error.Error())
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 func (u *UserServer) CheckPassWord(ctx context.Context, req *proto.PasswordCheckInfo) (*proto.CheckResponse, error) {
-	panic("implement me")
-}
-
-func (u *UserServer) mustEmbedUnimplementedUserServer() {
-	panic("implement me")
+	options := &password.Options{SaltLen: 16, Iterations: 100, KeyLen: 32, HashFunction: sha512.New}
+	passwordInfo := strings.Split(req.EncryptedPassword, "$")
+	check := password.Verify(req.PassWord, passwordInfo[2], passwordInfo[3], options)
+	return &proto.CheckResponse{
+		Success: check,
+	}, nil
 }
