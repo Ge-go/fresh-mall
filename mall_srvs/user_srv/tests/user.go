@@ -29,8 +29,8 @@ func main() {
 	defer conn.Close()
 
 	//TestUserList()
-	TestUserById()
-	//TestCreateUser()
+	//TestUserById()
+	TestCreateUser()
 }
 
 func TestUserList() {
@@ -82,7 +82,7 @@ func TestCreateUser() {
 	resp, err := userClient.CreateUser(context.Background(), &proto.CreateUserInfo{
 		NickName: "wsAA",
 		PassWord: "admin123123",
-		Mobile:   "15221889900",
+		Mobile:   "15097851145",
 	})
 	if err != nil {
 		panic(err)

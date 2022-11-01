@@ -29,6 +29,7 @@ func ModelToUserInfoResponse(user model.User) *proto.UserInfoResponse {
 		Gender:   user.Gender,
 		Role:     int32(user.Role),
 		Mobile:   user.Mobile,
+		PassWord: user.Password,
 	}
 	if user.Birthday != nil {
 		userInfoRsp.BirthDay = uint64(user.Birthday.Unix())
