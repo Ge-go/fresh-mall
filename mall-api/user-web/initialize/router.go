@@ -2,6 +2,7 @@ package initialize
 
 import (
 	"github.com/gin-gonic/gin"
+
 	"mall-api/user-web/router"
 )
 

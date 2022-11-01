@@ -57,6 +57,7 @@ func Paginate(page int, pageSize int) func(db *gorm.DB) *gorm.DB {
 
 // GetUserList user manager获取用户列
 func (u *UserServer) GetUserList(ctx context.Context, req *proto.PageInfo) (*proto.UserListResponse, error) {
+	// todo 实际企业级开发到底如何优化这里
 	var users []model.User
 	res := global.DB.WithContext(ctx).Find(&users)
 	if res.Error != nil {
@@ -66,7 +67,7 @@ func (u *UserServer) GetUserList(ctx context.Context, req *proto.PageInfo) (*pro
 	rsp := &proto.UserListResponse{}
 	rsp.Total = int32(res.RowsAffected)
 
-	global.DB.WithContext(ctx).Scopes(Paginate(int(req.Pn), int(req.PSize))).Find(&users)
+	global.DB.WithContext(ctx).Scopes(Paginate(int(req.Pn), int(req.PSize))).Order("id").Find(&users)
 
 	for _, user := range users {
 		userInfoRsp := ModelToUserInfoResponse(user)
@@ -160,6 +161,10 @@ func (u *UserServer) UpdateUser(ctx context.Context, req *proto.UpdateUserInfo) 
 func (u *UserServer) CheckPassWord(ctx context.Context, req *proto.PasswordCheckInfo) (*proto.CheckResponse, error) {
 	options := &password.Options{SaltLen: 16, Iterations: 100, KeyLen: 32, HashFunction: sha512.New}
 	passwordInfo := strings.Split(req.EncryptedPassword, "$")
+
+	if len(passwordInfo) < 4 { //做一个保护,不然服务器会发生崩溃
+		return nil, status.Error(codes.InvalidArgument, "invalid encryptedPassword")
+	}
 	check := password.Verify(req.PassWord, passwordInfo[2], passwordInfo[3], options)
 	return &proto.CheckResponse{
 		Success: check,

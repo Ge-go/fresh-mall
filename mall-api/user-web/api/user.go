@@ -1,64 +1,44 @@
 package api
 
 import (
+	"fmt"
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/status"
+
+	"mall-api/user-web/forms"
+	"mall-api/user-web/global"
 	"mall-api/user-web/global/response"
 	"mall-api/user-web/proto"
-	"net/http"
-	"time"
+	"mall-api/user-web/utils"
 )
 
-func HandleGrpcErrorToHttp(err error, c *gin.Context) {
-	// 将grpc的code转换成http的状态码
-	if e, ok := status.FromError(err); ok {
-		switch e.Code() {
-		case codes.NotFound:
-			c.JSON(http.StatusNotFound, gin.H{
-				"msg": e.Message(),
-			})
-		case codes.InvalidArgument:
-			c.JSON(http.StatusBadRequest, gin.H{
-				"msg": "invalidate param",
-			})
-		case codes.AlreadyExists:
-			c.JSON(http.StatusAlreadyReported, gin.H{
-				"msg": "already exists",
-			})
-		case codes.Internal:
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"msg": "internal server error",
-			})
-		case codes.Unavailable:
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"msg": "User service not available",
-			})
-		default:
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"msg": "unknown error",
-			})
-		}
-	}
-}
-
+// GetUserList 获取用户列表
 func GetUserList(ctx *gin.Context) {
-	conn, err := grpc.Dial("0.0.0.0:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", global.ServerConfig.UserSrvInfo.Host, global.ServerConfig.UserSrvInfo.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		zap.S().Errorw("[grpc.Dial] conn err", "msg", err.Error())
 	}
 
+	// todo validate
+	pn := ctx.DefaultQuery("pn", "0")
+	pnInt, _ := strconv.Atoi(pn)
+	pSize := ctx.DefaultQuery("psize", "10")
+	pSizeInt, _ := strconv.Atoi(pSize)
+
 	client := proto.NewUserClient(conn)
 	userList, err := client.GetUserList(ctx, &proto.PageInfo{
-		Pn:    1,
-		PSize: 3,
+		Pn:    uint32(pnInt),
+		PSize: uint32(pSizeInt),
 	})
 	if err != nil {
 		zap.S().Errorw("[GetUserList] get user list err")
-		HandleGrpcErrorToHttp(err, ctx)
+		utils.HandleGrpcErrorToHttp(err, ctx)
 		return
 	}
 
@@ -74,4 +54,14 @@ func GetUserList(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, resp)
+}
+
+// PassWordLogin 密码登录(尚未注册)
+func PassWordLogin(ctx *gin.Context) {
+	//表单验证
+	passwordLoginForm := forms.PassWordLoginForm{}
+	if err := ctx.ShouldBind(&passwordLoginForm); err != nil {
+		utils.HandleValidatorError(ctx, err)
+		return
+	}
 }
