@@ -2,20 +2,20 @@ package api
 
 import (
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
-	jwtmodel "mall-api/user-web/global/jwt"
-	"mall-api/user-web/middleware"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
+	jwttk "mall-api/user-web/api/jwt"
 	"mall-api/user-web/forms"
 	"mall-api/user-web/global"
+	jwtmodel "mall-api/user-web/global/jwt"
 	"mall-api/user-web/global/response"
 	"mall-api/user-web/proto"
 	"mall-api/user-web/utils"
@@ -26,6 +26,7 @@ func GetUserList(ctx *gin.Context) {
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", global.ServerConfig.UserSrvInfo.Host, global.ServerConfig.UserSrvInfo.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		zap.S().Errorw("[grpc.Dial] conn err", "msg", err.Error())
+		return
 	}
 
 	// todo validate
@@ -42,6 +43,7 @@ func GetUserList(ctx *gin.Context) {
 	if err != nil {
 		zap.S().Errorw("[GetUserList] get user list err")
 		utils.HandleGrpcErrorToHttp(err, ctx)
+		return
 	}
 
 	resp := make([]response.UserResponse, 0, len(userList.Data))
@@ -67,9 +69,18 @@ func PassWordLogin(ctx *gin.Context) {
 		return
 	}
 
+	//验证人机
+	if !store.Verify(passwordLoginForm.CaptchaId, passwordLoginForm.Captcha, true) {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"captcha": "verification code error",
+		})
+		return
+	}
+
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", global.ServerConfig.UserSrvInfo.Host, global.ServerConfig.UserSrvInfo.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		zap.S().Errorw("[grpc.Dial] conn err", "msg", err.Error())
+		return
 	}
 
 	client := proto.NewUserClient(conn)
@@ -80,6 +91,7 @@ func PassWordLogin(ctx *gin.Context) {
 
 	if err != nil {
 		utils.HandleGrpcErrorToHttp(err, ctx)
+		return
 	}
 
 	// check pwd
@@ -92,11 +104,12 @@ func PassWordLogin(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, map[string]string{
 			"password": "login failed",
 		})
+		return
 	}
 
 	if checkResp.Success {
 		// 生成token
-		j := middleware.NewJWT()
+		j := jwttk.NewJWTToken()
 		claims := jwtmodel.CustomClaims{
 			ID:          uint(resp.Id),
 			NickName:    resp.NickName,
@@ -104,14 +117,16 @@ func PassWordLogin(ctx *gin.Context) {
 			StandardClaims: jwt.StandardClaims{
 				NotBefore: time.Now().Unix(),
 				ExpiresAt: time.Now().Unix() + 60*60*24*30, // 30天
-				Issuer:    "ws",
+				Issuer:    "ws-mall",
 			},
 		}
 		token, err := j.CreateToken(claims)
 		if err != nil {
+			zap.S().Errorw("creat token failed", "msg", err.Error())
 			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"msg": "create token failed",
 			})
+			return
 		}
 
 		ctx.JSON(http.StatusOK, gin.H{

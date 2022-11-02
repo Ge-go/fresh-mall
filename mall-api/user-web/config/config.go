@@ -14,4 +14,5 @@ type ServerConfig struct {
 
 type JWTConfig struct {
 	SigningKey string `mapstructure:"sign_key"`
+	PublicKey  string `mapstructure:"pub_key"`
 }

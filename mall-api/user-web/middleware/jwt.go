@@ -1,24 +1,24 @@
 package middleware
 
 import (
+	"crypto/rsa"
 	"errors"
-	"net/http"
-	"time"
-
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"net/http"
 
 	"mall-api/user-web/global"
 	jwtmodel "mall-api/user-web/global/jwt"
 )
 
+// JWTAuth  verify
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 我们这里jwt鉴权取头部信息 x-token 登录时回返回token信息 这里前端需要把token存储到cookie或者本地localSstorage中 不过需要跟后端协商过期时间 可以约定刷新令牌或者重新登录
 		token := c.Request.Header.Get("x-token")
 		if token == "" {
 			c.JSON(http.StatusUnauthorized, map[string]string{
-				"msg": "请登录",
+				"msg": "please login",
 			})
 			c.Abort()
 			return
@@ -29,13 +29,13 @@ func JWTAuth() gin.HandlerFunc {
 		if err != nil {
 			if err == TokenExpired {
 				c.JSON(http.StatusUnauthorized, map[string]string{
-					"msg": "授权已过期",
+					"msg": "authorization expired",
 				})
 				c.Abort()
 				return
 			}
 
-			c.JSON(http.StatusUnauthorized, "未登陆")
+			c.JSON(http.StatusUnauthorized, "not logged in")
 			c.Abort()
 			return
 		}
@@ -45,8 +45,8 @@ func JWTAuth() gin.HandlerFunc {
 	}
 }
 
-type JWT struct {
-	SigningKey []byte
+type JWTVerifier struct {
+	PublicKey *rsa.PublicKey
 }
 
 var (
@@ -56,22 +56,17 @@ var (
 	TokenInvalid     = errors.New("couldn't handle this token")
 )
 
-func NewJWT() *JWT {
-	return &JWT{
-		[]byte(global.ServerConfig.JWTInfo.SigningKey), //可以设置过期时间
+func NewJWT() *JWTVerifier {
+	pem, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(global.ServerConfig.JWTInfo.PublicKey))
+	return &JWTVerifier{
+		pem, //可以设置过期时间
 	}
 }
 
-// CreateToken 创建一个token
-func (j *JWT) CreateToken(claims jwtmodel.CustomClaims) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(j.SigningKey)
-}
-
 // ParseToken 解析 token
-func (j *JWT) ParseToken(tokenString string) (*jwtmodel.CustomClaims, error) {
+func (j *JWTVerifier) ParseToken(tokenString string) (*jwtmodel.CustomClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &jwtmodel.CustomClaims{}, func(token *jwt.Token) (i interface{}, e error) {
-		return j.SigningKey, nil
+		return j.PublicKey, nil
 	})
 	if err != nil {
 		if ve, ok := err.(*jwt.ValidationError); ok {
@@ -95,23 +90,4 @@ func (j *JWT) ParseToken(tokenString string) (*jwtmodel.CustomClaims, error) {
 	} else {
 		return nil, TokenInvalid
 	}
-}
-
-// RefreshToken 更新token
-func (j *JWT) RefreshToken(tokenString string) (string, error) {
-	jwt.TimeFunc = func() time.Time {
-		return time.Unix(0, 0)
-	}
-	token, err := jwt.ParseWithClaims(tokenString, &jwtmodel.CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return j.SigningKey, nil
-	})
-	if err != nil {
-		return "", err
-	}
-	if claims, ok := token.Claims.(*jwtmodel.CustomClaims); ok && token.Valid {
-		jwt.TimeFunc = time.Now
-		claims.StandardClaims.ExpiresAt = time.Now().Add(1 * time.Hour).Unix()
-		return j.CreateToken(*claims)
-	}
-	return "", TokenInvalid
 }
