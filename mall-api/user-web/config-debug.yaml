@@ -1,5 +1,5 @@
 name: user-web  #server name
-port: ":8021"  # user-web server port
+port: :8021  # user-web server port
 user_srv: # rpc user_srv
   host: 0.0.0.0
   port: 50051
@@ -28,8 +28,8 @@ jwt:
     ry5Q96Lp8I2A/R4dAgMBAAE=
     -----END PUBLIC KEY-----
 sms:
-  key: LTAI5tEEpaHuxKeLtDZsA8fe
-  secret: nMqiVh0ysdfRNq8eWUHlKxB7N3JC1Z
+  key: LEETAI5tEEpaHuxKeLtDZsA8fEEe
+  secret: nTTMqiVh0ysdfRNq8eWUHlKxB7N3JC1TTZ
   regionId: cn-hangzhou
 redis:
   host: 121.37.232.8
