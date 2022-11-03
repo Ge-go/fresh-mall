@@ -20,6 +20,9 @@ func main() {
 		panic(err)
 	}
 
+	// 初始化redis
+	initialize.InitRdsClient()
+
 	if err := engine.Run(global.ServerConfig.Port); err != nil {
 		panic(err)
 	}

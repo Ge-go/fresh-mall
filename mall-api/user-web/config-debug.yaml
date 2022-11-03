@@ -27,3 +27,10 @@ jwt:
     uMrHA8sjwQCp6znz/IP7xkfRsIXU0XbCl1Iqu6b78wGLBFRYJYiKMNB/GmRaZQMi
     ry5Q96Lp8I2A/R4dAgMBAAE=
     -----END PUBLIC KEY-----
+sms:
+  key: LTAI5tEEpaHuxKeLtDZsA8fe
+  secret: nMqiVh0ysdfRNq8eWUHlKxB7N3JC1Z
+  regionId: cn-hangzhou
+redis:
+  host: 121.37.232.8
+  port: 6379

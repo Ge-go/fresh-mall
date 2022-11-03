@@ -12,5 +12,6 @@ func InitUserRouter(Router *gin.RouterGroup) {
 	{
 		userRouter.GET("list", middleware.JWTAuth(), middleware.IsAdminAuth(), api.GetUserList) //获取用户列表
 		userRouter.POST("pwd_login", api.PassWordLogin)                                         // 根据账号密码进行登录
+		userRouter.POST("register", api.Register)                                               //register user
 	}
 }

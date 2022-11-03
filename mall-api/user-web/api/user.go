@@ -2,6 +2,8 @@ package api
 
 import (
 	"fmt"
+	"github.com/go-redis/redis/v8"
+	_const "mall-api/user-web/const"
 	"net/http"
 	"strconv"
 	"time"
@@ -139,4 +141,48 @@ func PassWordLogin(ctx *gin.Context) {
 			"msg": "password error",
 		})
 	}
+}
+
+// Register 注册接口
+func Register(ctx *gin.Context) {
+	registerForm := forms.RegisterForm{}
+	if err := ctx.ShouldBind(&registerForm); err != nil {
+		utils.HandleValidatorError(ctx, err)
+		return
+	}
+
+	key := fmt.Sprintf("%s%s", _const.SmsRegisterPrefix, registerForm.Mobile)
+	// 验证code
+	res, err := global.RedisClient.Get(ctx, key).Result()
+	if err == redis.Nil || registerForm.SmsCode != res {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"msg": "code non-existent or code is error",
+		})
+		return
+	}
+	defer global.RedisClient.Del(ctx, key) // del sms key
+
+	//调用register srv
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", global.ServerConfig.UserSrvInfo.Host, global.ServerConfig.UserSrvInfo.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		zap.S().Errorw("[grpc.Dial] conn err", "msg", err.Error())
+		return
+	}
+
+	client := proto.NewUserClient(conn)
+
+	_, err = client.CreateUser(ctx, &proto.CreateUserInfo{
+		NickName: registerForm.NickName,
+		PassWord: registerForm.PassWord,
+		Mobile:   registerForm.Mobile,
+	})
+
+	if err != nil {
+		utils.HandleGrpcErrorToHttp(err, ctx)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "register success",
+	})
 }
