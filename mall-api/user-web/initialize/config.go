@@ -31,8 +31,6 @@ func InitConfig() {
 		panic(err)
 	}
 
-	zap.S().Infof("the user server config is:%v", global.ServerConfig)
-
 	// 监控yaml
 	v.WatchConfig()
 	v.OnConfigChange(func(in fsnotify.Event) {

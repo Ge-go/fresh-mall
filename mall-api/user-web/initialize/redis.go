@@ -12,7 +12,8 @@ import (
 // InitRdsClient redis client init
 func InitRdsClient() {
 	global.RedisClient = redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("%s:%d", global.ServerConfig.RedisInfo.Host, global.ServerConfig.RedisInfo.Port),
+		Addr:     fmt.Sprintf("%s:%d", global.ServerConfig.RedisInfo.Host, global.ServerConfig.RedisInfo.Port),
+		Password: global.ServerConfig.RedisInfo.PassWord,
 	})
 
 	_, err := global.RedisClient.Ping(context.Background()).Result()

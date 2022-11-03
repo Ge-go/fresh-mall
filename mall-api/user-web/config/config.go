@@ -21,8 +21,9 @@ type AliSmsConfig struct {
 }
 
 type RedisConfig struct {
-	Host string `mapstructure:"host"`
-	Port int    `mapstructure:"port"`
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	PassWord string `mapstructure:"password"`
 }
 
 type JWTConfig struct {
