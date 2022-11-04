@@ -4,10 +4,8 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-	"mall-api/user-web/utils"
-	"strconv"
-
-	"mall-api/user-web/global"
+	"mall_srvs/user_srv/global"
+	"mall_srvs/user_srv/utils"
 )
 
 func GetEnvInfo(env string) bool {
@@ -15,11 +13,12 @@ func GetEnvInfo(env string) bool {
 	return viper.GetBool(env)
 }
 
+// InitConfig read Config
 func InitConfig() {
-	configFileName := "user-web/config-debug.yaml" // debug环境
+	configFileName := "user_srv/config-debug.yaml" // debug环境
 	pro := GetEnvInfo("FRESH_MALL_PRO")            // 生产环境
 	if pro {
-		configFileName = "user-web/config-pro.yaml" //生产环境
+		configFileName = "user_srv/config-pro.yaml" //生产环境
 	}
 
 	v := viper.New()
@@ -33,9 +32,9 @@ func InitConfig() {
 		panic(err)
 	}
 
-	if pro { // 如果是生产环境,随机生成一个port 交给consul
+	if pro { //如果是生产环境,交给consul
 		port, _ := utils.GetFreePort()
-		global.ServerConfig.Port = strconv.Itoa(port)
+		global.ServerConfig.Port = port
 	}
 
 	// 监控yaml

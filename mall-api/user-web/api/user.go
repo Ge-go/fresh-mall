@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
-	_const "mall-api/user-web/const"
 	"net/http"
 	"strconv"
 	"time"
@@ -11,10 +10,8 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-
 	jwttk "mall-api/user-web/api/jwt"
+	_const "mall-api/user-web/const"
 	"mall-api/user-web/forms"
 	"mall-api/user-web/global"
 	jwtmodel "mall-api/user-web/global/jwt"
@@ -25,20 +22,13 @@ import (
 
 // GetUserList 获取用户列表
 func GetUserList(ctx *gin.Context) {
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", global.ServerConfig.UserSrvInfo.Host, global.ServerConfig.UserSrvInfo.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		zap.S().Errorw("[grpc.Dial] conn err", "msg", err.Error())
-		return
-	}
-
 	// todo validate
 	pn := ctx.DefaultQuery("pn", "0")
 	pnInt, _ := strconv.Atoi(pn)
 	pSize := ctx.DefaultQuery("psize", "10")
 	pSizeInt, _ := strconv.Atoi(pSize)
 
-	client := proto.NewUserClient(conn)
-	userList, err := client.GetUserList(ctx, &proto.PageInfo{
+	userList, err := global.UserSrvClient.GetUserList(ctx, &proto.PageInfo{
 		Pn:    uint32(pnInt),
 		PSize: uint32(pSizeInt),
 	})
@@ -79,15 +69,7 @@ func PassWordLogin(ctx *gin.Context) {
 		return
 	}
 
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", global.ServerConfig.UserSrvInfo.Host, global.ServerConfig.UserSrvInfo.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		zap.S().Errorw("[grpc.Dial] conn err", "msg", err.Error())
-		return
-	}
-
-	client := proto.NewUserClient(conn)
-
-	resp, err := client.GetUserByMobile(ctx, &proto.MobileRequest{
+	resp, err := global.UserSrvClient.GetUserByMobile(ctx, &proto.MobileRequest{
 		Mobile: passwordLoginForm.Mobile,
 	})
 
@@ -97,7 +79,7 @@ func PassWordLogin(ctx *gin.Context) {
 	}
 
 	// check pwd
-	checkResp, err := client.CheckPassWord(ctx, &proto.PasswordCheckInfo{
+	checkResp, err := global.UserSrvClient.CheckPassWord(ctx, &proto.PasswordCheckInfo{
 		PassWord:          passwordLoginForm.PassWord,
 		EncryptedPassword: resp.PassWord,
 	})
@@ -163,15 +145,7 @@ func Register(ctx *gin.Context) {
 	defer global.RedisClient.Del(ctx, key) // del sms key
 
 	//调用register srv
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", global.ServerConfig.UserSrvInfo.Host, global.ServerConfig.UserSrvInfo.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		zap.S().Errorw("[grpc.Dial] conn err", "msg", err.Error())
-		return
-	}
-
-	client := proto.NewUserClient(conn)
-
-	_, err = client.CreateUser(ctx, &proto.CreateUserInfo{
+	_, err = global.UserSrvClient.CreateUser(ctx, &proto.CreateUserInfo{
 		NickName: registerForm.NickName,
 		PassWord: registerForm.PassWord,
 		Mobile:   registerForm.Mobile,

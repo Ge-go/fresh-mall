@@ -23,6 +23,9 @@ func main() {
 	// 初始化redis
 	initialize.InitRdsClient()
 
+	// init user-srv conn
+	initialize.InitSrvConn()
+
 	if err := engine.Run(global.ServerConfig.Port); err != nil {
 		panic(err)
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha512"
 	"fmt"
+	"go.uber.org/zap"
 	"strings"
 	"time"
 
@@ -19,7 +20,7 @@ import (
 )
 
 type UserServer struct {
-	proto.UnimplementedUserServer
+	proto.UnsafeUserServer
 }
 
 func ModelToUserInfoResponse(user model.User) *proto.UserInfoResponse {
@@ -62,13 +63,18 @@ func (u *UserServer) GetUserList(ctx context.Context, req *proto.PageInfo) (*pro
 	var users []model.User
 	res := global.DB.WithContext(ctx).Find(&users)
 	if res.Error != nil {
+		zap.S().Errorw("get user total err", "msg", res.Error.Error())
 		return nil, res.Error
 	}
 
 	rsp := &proto.UserListResponse{}
 	rsp.Total = int32(res.RowsAffected)
 
-	global.DB.WithContext(ctx).Scopes(Paginate(int(req.Pn), int(req.PSize))).Order("id").Find(&users)
+	res = global.DB.WithContext(ctx).Scopes(Paginate(int(req.Pn), int(req.PSize))).Order("id").Find(&users)
+	if res.Error != nil {
+		zap.S().Errorw("get user list err", "msg", res.Error.Error())
+		return nil, res.Error
+	}
 
 	for _, user := range users {
 		userInfoRsp := ModelToUserInfoResponse(user)
@@ -86,6 +92,7 @@ func (u *UserServer) GetUserByMobile(ctx context.Context, req *proto.MobileReque
 		return nil, status.Error(codes.NotFound, "not found user by mobile")
 	}
 	if res.Error != nil {
+		zap.S().Errorw("get user by mobile err", "msg", res.Error.Error())
 		return nil, res.Error
 	}
 
@@ -101,6 +108,7 @@ func (u *UserServer) GetUserById(ctx context.Context, req *proto.IdRequest) (*pr
 		return nil, status.Error(codes.NotFound, "not found user by mobile")
 	}
 	if res.Error != nil {
+		zap.S().Errorw("get user by id err", "msg", res.Error.Error())
 		return nil, res.Error
 	}
 
@@ -116,6 +124,7 @@ func (u *UserServer) CreateUser(ctx context.Context, req *proto.CreateUserInfo) 
 		return nil, status.Error(codes.AlreadyExists, "mobile is already exists")
 	}
 	if res.Error != nil && res.Error != gorm.ErrRecordNotFound {
+		zap.S().Errorw("find user by create user err", "msg", res.Error.Error())
 		return nil, status.Error(codes.Internal, res.Error.Error())
 	}
 
@@ -129,6 +138,7 @@ func (u *UserServer) CreateUser(ctx context.Context, req *proto.CreateUserInfo) 
 
 	res = global.DB.WithContext(ctx).Create(&user)
 	if res.Error != nil {
+		zap.S().Errorw("create user err", "msg", res.Error.Error())
 		return nil, status.Error(codes.Internal, res.Error.Error())
 	}
 
@@ -143,6 +153,7 @@ func (u *UserServer) UpdateUser(ctx context.Context, req *proto.UpdateUserInfo) 
 		return nil, status.Error(codes.NotFound, "not found user by id")
 	}
 	if res.Error != nil {
+		zap.S().Errorw("get user by id err", "msg", res.Error.Error())
 		return nil, res.Error
 	}
 
@@ -153,6 +164,7 @@ func (u *UserServer) UpdateUser(ctx context.Context, req *proto.UpdateUserInfo) 
 
 	res = global.DB.WithContext(ctx).Save(&user)
 	if res.Error != nil {
+		zap.S().Errorw("update user err", "msg", res.Error.Error())
 		return nil, status.Error(codes.Internal, res.Error.Error())
 	}
 
