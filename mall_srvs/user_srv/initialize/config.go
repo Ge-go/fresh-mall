@@ -4,6 +4,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+
 	"mall_srvs/user_srv/global"
 	"mall_srvs/user_srv/utils"
 )
@@ -19,6 +20,8 @@ func InitConfig() {
 	pro := GetEnvInfo("FRESH_MALL_PRO")            // 生产环境
 	if pro {
 		configFileName = "user_srv/config-pro.yaml" //生产环境
+	} else if GetEnvInfo("FRESH_TEST") { //test环境 for windows
+		configFileName = "user_srv/config-test.yaml"
 	}
 
 	v := viper.New()
@@ -31,6 +34,10 @@ func InitConfig() {
 	if err := v.Unmarshal(&global.ServerConfig); err != nil {
 		panic(err)
 	}
+
+	//todo 后期是否要移除
+	port, _ := utils.GetFreePort()
+	global.ServerConfig.Port = port
 
 	if pro { //如果是生产环境,交给consul
 		port, _ := utils.GetFreePort()

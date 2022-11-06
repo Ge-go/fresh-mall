@@ -19,10 +19,12 @@ func RegisterToConsul() {
 		panic(err)
 	}
 
+	serviceID := fmt.Sprintf("%s:%d",
+		global.ServerConfig.Name, global.ServerConfig.Port)
 	// 生成注册对象
 	err = client.Agent().ServiceRegister(&api.AgentServiceRegistration{
 		Name:    global.ServerConfig.Name,
-		ID:      global.ServerConfig.Name,
+		ID:      serviceID,
 		Port:    global.ServerConfig.Port,
 		Address: global.ServerConfig.Host,
 		Tags:    []string{"wS", "sW", "test"},
@@ -39,4 +41,14 @@ func RegisterToConsul() {
 		zap.S().Errorw("register consul err", "msg", err.Error())
 		panic(err)
 	}
+	// 优雅退出
+	//go func() {
+	//	quit := make(chan os.Signal)
+	//	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	//	<-quit
+	//	if err = client.Agent().ServiceDeregister(serviceID); err != nil {
+	//		zap.S().Info("deregister consul failed")
+	//	}
+	//	zap.S().Info("deregister consul successful")
+	//}()
 }

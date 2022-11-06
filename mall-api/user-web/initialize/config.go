@@ -20,6 +20,8 @@ func InitConfig() {
 	pro := GetEnvInfo("FRESH_MALL_PRO")            // 生产环境
 	if pro {
 		configFileName = "user-web/config-pro.yaml" //生产环境
+	} else if GetEnvInfo("FRESH_TEST") { //test环境 for windows
+		configFileName = "user-web/config-test.yaml"
 	}
 
 	v := viper.New()
