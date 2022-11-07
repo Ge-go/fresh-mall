@@ -9,6 +9,9 @@ import (
 	"mall_srvs/user_srv/global"
 	"mall_srvs/user_srv/srv_config"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"mall_srvs/user_srv/handler"
 	"mall_srvs/user_srv/initialize"
@@ -20,7 +23,13 @@ func main() {
 	// logger
 	initialize.InitLogger()
 	// init config
-	initialize.InitConfig()
+	//initialize.InitConfig()
+
+	// init nacos config
+	initialize.InitNacosConfig()
+	// init config
+	initialize.InitNacosToConfig()
+
 	// mysql
 	initialize.InitMySQL()
 
@@ -38,10 +47,21 @@ func main() {
 	grpc_health_v1.RegisterHealthServer(server, health.NewServer())
 
 	// 服务注册  srv to consul
-	srv_config.RegisterToConsul()
+	client, serviceID := srv_config.RegisterToConsul()
 
-	err = server.Serve(lis)
-	if err != nil {
-		panic("failed to start user_srv." + err.Error())
+	go func() {
+		err = server.Serve(lis)
+		if err != nil {
+			panic("failed to start user_srv." + err.Error())
+		}
+	}()
+
+	// 优雅退出  关闭后丢弃consul配置信息
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	if err = client.Agent().ServiceDeregister(serviceID); err != nil {
+		zap.S().Info("deregister consul failed")
 	}
+	zap.S().Info("deregister consul successful")
 }

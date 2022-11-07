@@ -2,18 +2,35 @@ package initialize
 
 import (
 	"fmt"
-	"mall-api/user-web/proto"
 
 	"github.com/hashicorp/consul/api"
+	_ "github.com/mbobakov/grpc-consul-resolver" // It's important  负载均衡
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
 	"mall-api/user-web/global"
+	"mall-api/user-web/proto"
 )
 
-// InitSrvConn 初始化grpc服务  初始化user conn
+// InitSrvConn 初始化grpc服务  初始化user conn  新版本,并接入负载均衡
 func InitSrvConn() {
+	userConn, err := grpc.Dial(
+		fmt.Sprintf("consul://%s:%d/%s?wait=14s",
+			global.ServerConfig.ConsulInfo.Host, global.ServerConfig.ConsulInfo.Port, global.ServerConfig.UserSrvInfo.Name),
+		grpc.WithInsecure(),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`), //均匀负载
+	)
+	if err != nil {
+		zap.S().Fatal("Init Srv Conn With get user Conn error:", err.Error())
+	}
+
+	userSrvCli := proto.NewUserClient(userConn)
+	global.UserSrvClient = userSrvCli
+}
+
+// InitSrvConnOld 初始化grpc服务  初始化user conn
+func InitSrvConnOld() {
 	// todo 这么从注册中心去服务发现,也有问题,就是我并没有接入新的注册中心的内容
 	// 从注册中心获取用户服务的信息
 	cfg := api.DefaultConfig()

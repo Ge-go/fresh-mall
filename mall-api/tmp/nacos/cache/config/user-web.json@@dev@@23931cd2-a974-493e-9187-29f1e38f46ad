@@ -1,0 +1,27 @@
+{
+  "name": "user-web",
+  "port": ":8021",
+  "user_srv": {
+    "host": "192.168.48.1",
+    "port": 50051,
+    "name": "user-srv"
+  },
+  "jwt": {
+    "sign_key": "-----BEGIN RSA PRIVATE KEY-----\nMIICWgIBAAKBgGMQ9ZfXdY/TXcr9d1T1IHVRxXclDcvgREbApQVkdDbC3JtxsYdU\nXH9IZhcDms2UbQrwBYEIrhjgdWRHaqob6IBX9NG6uMrHA8sjwQCp6znz/IP7xkfR\nsIXU0XbCl1Iqu6b78wGLBFRYJYiKMNB/GmRaZQMiry5Q96Lp8I2A/R4dAgMBAAEC\ngYA0XwTWjsrRi/Xrl+979FKCcwYnJGmUvCycEr+qiB5/zKf/bS1i05BKoaWGyRsP\nT0YOIDFos4QGFrM4niCfaT2R4F86tL42Ih0fBP5wIPYU7fnBI24F+/YCHB9Ilb2Y\nEB7T4SvSqCqrKNP7I8kHlsZcGOQHtYq+dQiLdh17N4zuAQJBAMFYxi7K8jmHCbi3\nwLEY1V5uUp29+whxR2KxUIR4Tzbp/spzM1vbLIoCXykBbsy9DBB2J3kWL5BpR1AR\nzBK4YF0CQQCDKxLkOJn+rYeL5EgefVEITUeKV9q+fRqyXsYD6Lu1p+x/Wib4hDzO\n/G2609JOjdrQYfl83HT2nxzKHQzKhtjBAkB4bsmToApdVwXxL1Qxe9x8I5AGfa3+\nRkFG8lfLC/2boQl6JWPaVZ1aobuQmTnhAeif4FkaDX23IDyxXUSWbI5pAkB8VdlL\ngqfe9UkWfycp16p3TyHwboUIqngi+pmDXRqKAIq60Y89ZcRqhHfTcDTbh7YSb7zZ\n8fPhT0QwBkd4t0hBAkBL3NPp4jStQny6AtUzpX0oiTn3u3SoDuK3l4mKFMB818Lm\n5tCzow1dpbsqPM2yHV6w+/HQz/d+S/KjWfBSGrjm\n-----END RSA PRIVATE KEY-----\n",
+    "pub_key": "-----BEGIN PUBLIC KEY-----\nMIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgGMQ9ZfXdY/TXcr9d1T1IHVRxXcl\nDcvgREbApQVkdDbC3JtxsYdUXH9IZhcDms2UbQrwBYEIrhjgdWRHaqob6IBX9NG6\nuMrHA8sjwQCp6znz/IP7xkfRsIXU0XbCl1Iqu6b78wGLBFRYJYiKMNB/GmRaZQMi\nry5Q96Lp8I2A/R4dAgMBAAE=\n-----END PUBLIC KEY-----\n"
+  },
+  "sms": {
+    "key": "LTAI5tEEpaHuxKeLtDZsA8fe",
+    "secret": "nMqiVh0ysdfRNq8eWUHlKxB7N3JC1Z",
+    "regionId": "cn-hangzhou"
+  },
+  "redis": {
+    "host": "121.37.232.8",
+    "port": 6379,
+    "password": "w821230693"
+  },
+  "consul": {
+    "host": "121.37.232.8",
+    "port": 8500
+  }
+}

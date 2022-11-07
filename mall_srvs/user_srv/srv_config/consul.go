@@ -8,7 +8,7 @@ import (
 )
 
 // RegisterToConsul srv register to consul
-func RegisterToConsul() {
+func RegisterToConsul() (*api.Client, string) {
 	cfg := api.DefaultConfig()
 	cfg.Address = fmt.Sprintf("%s:%d",
 		global.ServerConfig.ConsulInfo.Host, global.ServerConfig.ConsulInfo.Port)
@@ -28,27 +28,20 @@ func RegisterToConsul() {
 		Port:    global.ServerConfig.Port,
 		Address: global.ServerConfig.Host,
 		Tags:    []string{"wS", "sW", "test"},
-		Check: &api.AgentServiceCheck{
-			GRPC: fmt.Sprintf("%s:%d",
-				global.ServerConfig.Host, global.ServerConfig.Port),
-			Timeout:                        "5s",
-			Interval:                       "5s",
-			DeregisterCriticalServiceAfter: "15s",
-		},
+		// todo 暂时关闭测活
+		//Check: &api.AgentServiceCheck{
+		//	GRPC: fmt.Sprintf("%s:%d",
+		//		global.ServerConfig.Host, global.ServerConfig.Port),
+		//	Timeout:                        "5s",
+		//	Interval:                       "5s",
+		//	DeregisterCriticalServiceAfter: "15s",
+		//},
 	})
 
 	if err != nil {
 		zap.S().Errorw("register consul err", "msg", err.Error())
 		panic(err)
 	}
-	// 优雅退出
-	//go func() {
-	//	quit := make(chan os.Signal)
-	//	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	//	<-quit
-	//	if err = client.Agent().ServiceDeregister(serviceID); err != nil {
-	//		zap.S().Info("deregister consul failed")
-	//	}
-	//	zap.S().Info("deregister consul successful")
-	//}()
+
+	return client, serviceID
 }

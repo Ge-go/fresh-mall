@@ -1,7 +1,12 @@
 package initialize
 
 import (
+	"encoding/json"
+
 	"github.com/fsnotify/fsnotify"
+	"github.com/nacos-group/nacos-sdk-go/clients"
+	"github.com/nacos-group/nacos-sdk-go/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/vo"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 
@@ -12,6 +17,50 @@ import (
 func GetEnvInfo(env string) bool {
 	viper.AutomaticEnv()
 	return viper.GetBool(env)
+}
+
+func InitNacosToConfig() {
+	serverConfigs := []constant.ServerConfig{
+		{
+			IpAddr: global.NacosConfig.Nacos.Host,
+			Port:   uint64(global.NacosConfig.Nacos.Port),
+		},
+	}
+
+	cc := constant.ClientConfig{
+		NamespaceId:         global.NacosConfig.Nacos.Namespace,
+		TimeoutMs:           5000,
+		NotLoadCacheAtStart: true,
+		LogDir:              "tmp/nacos/log",
+		CacheDir:            "tmp/nacos/cache",
+		LogLevel:            "debug",
+	}
+
+	client, err := clients.CreateConfigClient(map[string]interface{}{
+		"serverConfigs": serverConfigs,
+		"clientConfig":  cc,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	cfg, err := client.GetConfig(vo.ConfigParam{
+		DataId: global.NacosConfig.Nacos.DataId,
+		Group:  global.NacosConfig.Nacos.Group,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	err = json.Unmarshal([]byte(cfg), &global.ServerConfig)
+	if err != nil {
+		zap.S().Errorw("json unmarshal server config err", "msg", err.Error())
+		panic(err)
+	}
+
+	//todo 后期是否要移除  随机端口
+	port, _ := utils.GetFreePort()
+	global.ServerConfig.Port = port
 }
 
 // InitConfig read Config

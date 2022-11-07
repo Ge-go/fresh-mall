@@ -13,4 +13,5 @@ var (
 	Trans         ut.Translator
 	RedisClient   *redis.Client
 	UserSrvClient proto.UserClient
+	NacosConfig   *config.NacosConfig
 )

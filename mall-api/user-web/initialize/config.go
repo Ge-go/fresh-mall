@@ -1,13 +1,18 @@
 package initialize
 
 import (
-	"github.com/fsnotify/fsnotify"
-	"github.com/spf13/viper"
-	"go.uber.org/zap"
-	"mall-api/user-web/utils"
+	"encoding/json"
 	"strconv"
 
+	"github.com/fsnotify/fsnotify"
+	"github.com/nacos-group/nacos-sdk-go/clients"
+	"github.com/nacos-group/nacos-sdk-go/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/vo"
+	"github.com/spf13/viper"
+	"go.uber.org/zap"
+
 	"mall-api/user-web/global"
+	"mall-api/user-web/utils"
 )
 
 func GetEnvInfo(env string) bool {
@@ -15,6 +20,47 @@ func GetEnvInfo(env string) bool {
 	return viper.GetBool(env)
 }
 
+func InitNacosToConfig() {
+	serverConfigs := []constant.ServerConfig{
+		{
+			IpAddr: global.NacosConfig.Nacos.Host,
+			Port:   uint64(global.NacosConfig.Nacos.Port),
+		},
+	}
+
+	cc := constant.ClientConfig{
+		NamespaceId:         global.NacosConfig.Nacos.Namespace,
+		TimeoutMs:           5000,
+		NotLoadCacheAtStart: true,
+		LogDir:              "tmp/nacos/log",
+		CacheDir:            "tmp/nacos/cache",
+		LogLevel:            "debug",
+	}
+
+	client, err := clients.CreateConfigClient(map[string]interface{}{
+		"serverConfigs": serverConfigs,
+		"clientConfig":  cc,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	cfg, err := client.GetConfig(vo.ConfigParam{
+		DataId: global.NacosConfig.Nacos.DataId,
+		Group:  global.NacosConfig.Nacos.Group,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	err = json.Unmarshal([]byte(cfg), &global.ServerConfig)
+	if err != nil {
+		zap.S().Errorw("json unmarshal server config err", "msg", err.Error())
+		panic(err)
+	}
+}
+
+// InitConfig 引入nacos而弃用
 func InitConfig() {
 	configFileName := "user-web/config-debug.yaml" // debug环境
 	pro := GetEnvInfo("FRESH_MALL_PRO")            // 生产环境
