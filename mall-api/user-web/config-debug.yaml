@@ -3,6 +3,8 @@ port: :8021  # user-web server port
 user_srv: # rpc user_srv
   host: 0.0.0.0
   port: 50051
+  name: user-srv
+
 jwt:
   sign_key: |
     -----BEGIN RSA PRIVATE KEY-----
@@ -28,9 +30,15 @@ jwt:
     ry5Q96Lp8I2A/R4dAgMBAAE=
     -----END PUBLIC KEY-----
 sms:
-  key: LEETAI5tEEpaHuxKeLtDZsA8fEEe
-  secret: nTTMqiVh0ysdfRNq8eWUHlKxB7N3JC1TTZ
+  key: LAATAI5tEEpaHuxKeLtDZsA8fTTe
+  secret: nAAMqiVh0ysdfRNq8eWUHlKxB7N3JC1TTZ
   regionId: cn-hangzhou
+
 redis:
   host: 121.37.232.8
   port: 6379
+  password: 123456
+
+consul:
+  host: 121.37.232.8
+  port: 8502
