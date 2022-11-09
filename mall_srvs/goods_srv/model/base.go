@@ -2,10 +2,10 @@ package model
 
 import (
 	"encoding/json"
+	"gorm.io/gorm"
 	"time"
 
 	"database/sql/driver"
-	"gorm.io/gorm"
 )
 
 type GormList []string
@@ -23,6 +23,23 @@ type BaseModel struct {
 	ID        int32     `gorm:"primarykey;type:int"` // why is int32
 	CreatedAt time.Time `gorm:"column:add_time"`
 	UpdatedAt time.Time `gorm:"column:update_time"`
-	DeleteAt  gorm.DeletedAt
-	IsDeleted bool `gorm:"column:is_deleted"`
+	IsDeleted int       `gorm:"column:is_deleted"`
+}
+
+// Paginate gorm内置分页
+func Paginate(page int, pageSize int) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if page == 0 {
+			page = 1
+		}
+		switch {
+		case pageSize > 100:
+			pageSize = 100
+		case pageSize <= 0:
+			pageSize = 10
+		}
+
+		offset := (page - 1) * pageSize
+		return db.Offset(offset).Limit(pageSize)
+	}
 }

@@ -2,24 +2,24 @@ package main
 
 import (
 	"fmt"
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/health"
-	"google.golang.org/grpc/health/grpc_health_v1"
-	"mall_srvs/goods_srv/global"
-	"mall_srvs/goods_srv/srv_config"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/health/grpc_health_v1"
+
+	"mall_srvs/goods_srv/global"
 	"mall_srvs/goods_srv/handler"
 	"mall_srvs/goods_srv/initialize"
 	"mall_srvs/goods_srv/proto"
+	"mall_srvs/goods_srv/srv_config"
 )
 
 func main() {
-
 	// logger
 	initialize.InitLogger()
 	// init config
@@ -34,9 +34,9 @@ func main() {
 	initialize.InitMySQL()
 
 	server := grpc.NewServer()
-	proto.RegisterUserServer(server, &handler.UserServer{})
+	proto.RegisterGoodsServer(server, &handler.GoodsServer{})
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d",
-		global.ServerConfig.Host, global.ServerConfig.Port))
+		global.ServerConfig.Host, 50051)) //todo 暂时用这个
 	if err != nil {
 		panic("failed to listen:" + err.Error())
 	}

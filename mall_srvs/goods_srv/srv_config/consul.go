@@ -27,7 +27,7 @@ func RegisterToConsul() (*api.Client, string) {
 		ID:      serviceID,
 		Port:    global.ServerConfig.Port,
 		Address: global.ServerConfig.Host,
-		Tags:    []string{"wS", "sW", "test"},
+		Tags:    global.ServerConfig.ConsulInfo.Tags,
 		// todo 暂时关闭测活
 		//Check: &api.AgentServiceCheck{
 		//	GRPC: fmt.Sprintf("%s:%d",

@@ -18,6 +18,7 @@ type MySQLConfig struct {
 }
 
 type ConsulConfig struct {
-	Host string `mapstructure:"host" json:"host"`
-	Port int    `mapstructure:"port" json:"port"`
+	Host string   `mapstructure:"host" json:"host"`
+	Port int      `mapstructure:"port" json:"port"`
+	Tags []string `json:"tags"`
 }

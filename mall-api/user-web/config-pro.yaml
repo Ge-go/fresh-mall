@@ -1,4 +1,0 @@
-name: user-web
-user_srv:
-  host: 0.0.0.0
-  prot: 50051
