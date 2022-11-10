@@ -20,10 +20,10 @@ func (g *GormList) Scan(value interface{}) error {
 }
 
 type BaseModel struct {
-	ID        int32     `gorm:"primarykey;type:int"` // why is int32
-	CreatedAt time.Time `gorm:"column:add_time"`
-	UpdatedAt time.Time `gorm:"column:update_time"`
-	IsDeleted int       `gorm:"column:is_deleted"`
+	ID        int32     `gorm:"primarykey;type:int" json:"id"` // why is int32
+	CreatedAt time.Time `gorm:"column:add_time" json:"-"`
+	UpdatedAt time.Time `gorm:"column:update_time" json:"-"`
+	IsDeleted int       `gorm:"column:is_deleted" json:"-"`
 }
 
 // Paginate gorm内置分页

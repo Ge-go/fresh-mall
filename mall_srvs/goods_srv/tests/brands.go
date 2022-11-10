@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"mall_srvs/goods_srv/proto"
 )
 
@@ -25,13 +26,115 @@ func main() {
 	Init()
 	defer conn.Close()
 
-	GetBrand()
+	// brand
+	//GetBrand()
+	//createBrand()
+	//deleteBrand()
+	//saveBrand()
+
+	//banner
+	//getBanner()
+	//createBanner()
+	//delBanner()
+	//upBanner()
+
+	//category
+	//getCategorys()
+	getSubCategorys()
+}
+
+func getSubCategorys() {
+	category, err := goodsClient.GetSubCategory(context.Background(), &proto.CategoryListRequest{
+		Id: 135487,
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(category)
+}
+
+func getCategorys() {
+	list, err := goodsClient.GetAllCategorysList(context.Background(), &emptypb.Empty{})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(list.JsonData)
+}
+
+func upBanner() {
+	banner, err := goodsClient.UpdateBanner(context.Background(), &proto.BannerRequest{
+		Id:    1,
+		Index: 3,
+		Image: "123",
+		Url:   "456",
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(banner)
+}
+
+func delBanner() {
+	banner, err := goodsClient.DeleteBanner(context.Background(), &proto.BannerRequest{
+		Id: 2,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(banner)
+}
+
+func createBanner() {
+	banner, err := goodsClient.CreateBanner(context.Background(), &proto.BannerRequest{
+		Url:   "www:test",
+		Index: 1,
+		Image: "123",
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(banner)
+}
+
+func saveBrand() {
+	brand, err := goodsClient.UpdateBrand(context.Background(), &proto.BrandRequest{
+		Id:   112233,
+		Name: "就这???",
+		Logo: "test",
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(brand)
+}
+
+func deleteBrand() {
+	brand, err := goodsClient.DeleteBrand(context.Background(), &proto.BrandRequest{
+		Id: 1111,
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(brand)
+}
+
+func createBrand() {
+	brand, err := goodsClient.CreateBrand(context.Background(), &proto.BrandRequest{
+		Name: "谁tm买小米",
+		Logo: "test",
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(brand)
 }
 
 func GetBrand() {
 	brandLis, err := goodsClient.BrandList(context.Background(), &proto.BrandFilterRequest{
-		Pages:       1,
-		PagePerNums: 20,
+		Pages:       0,
+		PagePerNums: 0,
 	})
 	if err != nil {
 		panic(err)
@@ -40,4 +143,13 @@ func GetBrand() {
 		fmt.Println("获取到的brand", v)
 	}
 	fmt.Println("brand 总条数", brandLis.Total)
+}
+
+// bananer
+func getBanner() {
+	list, err := goodsClient.BannerList(context.Background(), &emptypb.Empty{})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(list)
 }
