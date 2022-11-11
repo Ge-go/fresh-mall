@@ -6,11 +6,12 @@ package model
 type Category struct {
 	BaseModel
 	Name             string      `gorm:"type:varchar(20);not null" json:"name"`
-	ParentCategoryID int32       `json:"parent_category_id"`
+	ParentCategoryID int32       `gorm:"int(11);default:null" json:"parent_category_id"`
 	ParentCategory   *Category   `json:"-"`
 	SubCategory      []*Category `gorm:"foreignKey:ParentCategoryID;references:ID" json:"sub_category"`
 	Level            int32       `gorm:"type:int;not null;default:1" json:"level"`
 	IsTab            bool        `gorm:"default:false;not null" json:"is_tab"`
+	Url              string      `gorm:"type:varchar(300);not null" json:"url"`
 }
 
 // Brands 品牌
@@ -24,10 +25,10 @@ type Brands struct {
 // GoodsCategoryBrand 商品类别品牌
 type GoodsCategoryBrand struct {
 	BaseModel
-	CategoryID int32 `gorm:"type:int;index:idx_category_brand,unique"`
+	CategoryID int32 `gorm:"type:int;index:goodscategorybrand_category_id_brand_id,unique"`
 	Category   Category
 
-	BrandsID int32 `gorm:"type:int;index:idx_category_brand,unique"`
+	BrandsID int32 `gorm:"type:int;index:goodscategorybrand_category_id_brand_id,unique"`
 	Brands   Brands
 }
 

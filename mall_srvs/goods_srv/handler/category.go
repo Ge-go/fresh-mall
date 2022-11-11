@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"gorm.io/gorm"
 	"mall_srvs/goods_srv/global"
 	"mall_srvs/goods_srv/model"
 	"mall_srvs/goods_srv/proto"
@@ -74,13 +75,70 @@ func (g *GoodsServer) GetSubCategory(ctx context.Context, req *proto.CategoryLis
 }
 
 func (g *GoodsServer) CreateCategory(ctx context.Context, req *proto.CategoryInfoRequest) (*proto.CategoryInfoResponse, error) {
-	panic("implement me")
+	category := &model.Category{
+		Name:  req.Name,
+		Level: req.Level,
+		IsTab: req.IsTab,
+		Url:   "test.com", // 仅用作测试url
+	}
+
+	if req.Level > 1 {
+		// 做一个父节点是否存在的动作
+		if res := global.DB.WithContext(ctx).Find(&model.Category{}, req.ParentCategory); res.RowsAffected == 0 {
+			return nil, status.Errorf(codes.NotFound, "cannot found parent category %d", req.ParentCategory)
+		} else if res.Error != nil {
+			zap.S().Errorw("find parent category for id", "msg", res.Error.Error(), "id", req.ParentCategory)
+			return nil, status.Error(codes.Internal, res.Error.Error())
+		}
+		category.ParentCategoryID = req.ParentCategory
+	}
+	if res := global.DB.WithContext(ctx).Save(category); res.Error != nil {
+		zap.S().Errorw("create category err", "msg", res.Error.Error())
+		return nil, status.Error(codes.Internal, res.Error.Error())
+	}
+
+	return &proto.CategoryInfoResponse{
+		Id:             category.ID,
+		Name:           category.Name,
+		ParentCategory: category.ParentCategoryID,
+		Level:          category.Level,
+		IsTab:          category.IsTab,
+	}, nil
 }
 
 func (g *GoodsServer) DeleteCategory(ctx context.Context, req *proto.DeleteCategoryRequest) (*emptypb.Empty, error) {
-	panic("implement me")
+	if res := global.DB.Where("id", req.Id).Update("is_deleted", 1); res.Error != nil {
+		if res.Error == gorm.ErrRecordNotFound {
+			return nil, status.Error(codes.NotFound, "not found category for id")
+		}
+		zap.S().Errorw("cannot found category by id", "msg", res.Error.Error())
+		return nil, status.Error(codes.Internal, res.Error.Error())
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
-func (g *GoodsServer) UpdateCategory(ctx context.Context, req *proto.CategoryInfoRequest) (*emptypb.Empty, error) {
-	panic("implement me")
+func (s *GoodsServer) UpdateCategory(ctx context.Context, req *proto.CategoryInfoRequest) (*emptypb.Empty, error) {
+	var category model.Category
+
+	if result := global.DB.First(&category, req.Id); result.RowsAffected == 0 {
+		return nil, status.Errorf(codes.NotFound, "商品分类不存在")
+	}
+
+	if req.Name != "" {
+		category.Name = req.Name
+	}
+	if req.ParentCategory != 0 {
+		category.ParentCategoryID = req.ParentCategory
+	}
+	if req.Level != 0 {
+		category.Level = req.Level
+	}
+	if req.IsTab {
+		category.IsTab = req.IsTab
+	}
+
+	global.DB.Save(&category)
+
+	return &emptypb.Empty{}, nil
 }

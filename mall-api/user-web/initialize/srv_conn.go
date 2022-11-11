@@ -19,7 +19,7 @@ func InitSrvConn() {
 		fmt.Sprintf("consul://%s:%d/%s?wait=14s",
 			global.ServerConfig.ConsulInfo.Host, global.ServerConfig.ConsulInfo.Port, global.ServerConfig.UserSrvInfo.Name),
 		grpc.WithInsecure(),
-		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`), //均匀负载
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`), //均匀负载(轮询)
 	)
 	if err != nil {
 		zap.S().Fatal("Init Srv Conn With get user Conn error:", err.Error())

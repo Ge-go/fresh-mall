@@ -40,7 +40,48 @@ func main() {
 
 	//category
 	//getCategorys()
-	getSubCategorys()
+	//getSubCategorys()
+	//createCategory()
+
+	//category brand
+	categoryBrandList()
+	//getCategoryBrandList()
+}
+
+func getCategoryBrandList() {
+	list, err := goodsClient.GetCategoryBrandList(context.Background(), &proto.CategoryInfoRequest{
+		Id: 135475,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(list)
+}
+
+func categoryBrandList() {
+	list, err := goodsClient.CategoryBrandList(context.Background(), &proto.CategoryBrandFilterRequest{
+		Pages:       1,
+		PagePerNums: 10,
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(list)
+}
+
+func createCategory() {
+	category, err := goodsClient.CreateCategory(context.Background(), &proto.CategoryInfoRequest{
+		Name:           "特殊水果",
+		ParentCategory: 123456789,
+		Level:          2,
+		IsTab:          true,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(category)
 }
 
 func getSubCategorys() {
