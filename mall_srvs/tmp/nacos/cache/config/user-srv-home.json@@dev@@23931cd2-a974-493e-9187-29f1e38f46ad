@@ -1,0 +1,16 @@
+{
+  "name": "user-srv",
+  "host": "192.168.5.2",
+  "port": 50051,
+  "mysql": {
+    "name": "root",
+    "pwd": "w821230693",
+    "ip": "121.37.232.8",
+    "port": 3306,
+    "db": "mall_user_srv"
+  },
+  "consul": {
+    "host": "121.37.232.8",
+    "port": 8500
+  }
+}

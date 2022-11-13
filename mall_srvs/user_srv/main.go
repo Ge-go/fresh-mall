@@ -20,7 +20,6 @@ import (
 )
 
 func main() {
-
 	// logger
 	initialize.InitLogger()
 	// init config

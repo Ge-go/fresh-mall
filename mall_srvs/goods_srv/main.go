@@ -36,7 +36,7 @@ func main() {
 	server := grpc.NewServer()
 	proto.RegisterGoodsServer(server, &handler.GoodsServer{})
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d",
-		global.ServerConfig.Host, 50051)) //todo 暂时用这个
+		global.ServerConfig.Host, global.ServerConfig.Port)) //todo 暂时用这个
 	if err != nil {
 		panic("failed to listen:" + err.Error())
 	}
