@@ -49,7 +49,7 @@ type Goods struct {
 
 	CategoryID int32 `gorm:"type:int;index:idx_category_brand,unique"`
 	Category   Category
-	BrandsID   int32 `gorm:"type:int;index:idx_category_brand,unique"`
+	BrandsID   int32 `gorm:"type:int;index:idx_category_brand,unique;column:brand_id"`
 	Brands     Brands
 
 	OnSale   bool `gorm:"default:false;not null"` //是否上架
@@ -57,15 +57,16 @@ type Goods struct {
 	IsNew    bool `gorm:"default:false;not null"` //是否是新商品
 	IsHot    bool `gorm:"default:false;not null"` //是否是热度商品
 
-	Name             string   `gorm:"type:varchar(50);not null"`   //商品名
-	GoodsSn          string   `gorm:"type:varchar(50);not null"`   //商品标签
-	ClickNum         int32    `gorm:"type:int;default:0;not null"` //点击次数
-	SoldNum          int32    `gorm:"type:int;default:0;not null"` //销售数目
-	FavNum           int32    `gorm:"type:int;default:0;not null"` //喜欢人数
-	MarketPrice      float32  `gorm:"not null"`                    // 原价格
-	ShopPrice        float32  `gorm:"not null"`                    //销售价格(优惠价格)
-	GoodsBrief       string   `gorm:"type:varchar(100);not null"`  // 商品简介
-	Images           GormList `gorm:"type:varchar(1000);not null"` //照片集合
-	DescImages       GormList `gorm:"type:varchar(1000);not null"` //下拉照片详情集合
-	GoodsFrontImages string   `gorm:"type:varchar(1000);not null"` //商品展示得图片
+	Name             string   `gorm:"type:varchar(50);not null"` //商品名
+	GoodsSn          string   `gorm:"type:varchar(50);not null"` //商品标签
+	Stocks           int32    `gorm:"type:int(11);not null"`
+	ClickNum         int32    `gorm:"type:int;default:0;not null"`                          //点击次数
+	SoldNum          int32    `gorm:"type:int;default:0;not null"`                          //销售数目
+	FavNum           int32    `gorm:"type:int;default:0;not null"`                          //喜欢人数
+	MarketPrice      float32  `gorm:"not null"`                                             // 原价格
+	ShopPrice        float32  `gorm:"not null"`                                             //销售价格(优惠价格)
+	GoodsBrief       string   `gorm:"type:varchar(100);not null"`                           // 商品简介
+	Images           GormList `gorm:"type:varchar(1000);not null"`                          //照片集合
+	DescImages       GormList `gorm:"type:varchar(1000);not null"`                          //下拉照片详情集合
+	GoodsFrontImages string   `gorm:"type:varchar(1000);not null;column:goods_front_image"` //商品展示得图片
 }

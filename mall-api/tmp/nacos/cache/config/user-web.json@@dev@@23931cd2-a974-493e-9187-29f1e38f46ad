@@ -1,6 +1,8 @@
 {
   "name": "user-web",
-  "port": ":8021",
+  "host":"192.168.48.1",
+  "tags":["user","web","用户web服务"],
+  "port": 8022,
   "user_srv": {
     "host": "192.168.48.1",
     "port": 50051,

@@ -9,8 +9,8 @@ import (
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 
-	"mall-api/user-web/global"
-	"mall-api/user-web/utils"
+	"mall-api/goods-web/global"
+	"mall-api/goods-web/utils"
 )
 
 func GetEnvInfo(env string) bool {
@@ -60,12 +60,12 @@ func InitNacosToConfig() {
 
 // InitConfig 引入nacos而弃用
 func InitConfig() {
-	configFileName := "user-web/config-debug.yaml" // debug环境
-	pro := GetEnvInfo("FRESH_MALL_PRO")            // 生产环境
+	configFileName := "goods-web/config-debug.yaml" // debug环境
+	pro := GetEnvInfo("FRESH_MALL_PRO")             // 生产环境
 	if pro {
-		configFileName = "user-web/config-pro.yaml" //生产环境
+		configFileName = "goods-web/config-pro.yaml" //生产环境
 	} else if GetEnvInfo("FRESH_TEST") { //test环境 for windows
-		configFileName = "user-web/config-test.yaml"
+		configFileName = "goods-web/config-test.yaml"
 	}
 
 	v := viper.New()

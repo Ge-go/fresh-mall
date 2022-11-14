@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"go.uber.org/zap"
-	"mall-api/user-web/global"
-	"mall-api/user-web/initialize"
-	"mall-api/user-web/utils/register/consul"
+	"mall-api/goods-web/global"
+	"mall-api/goods-web/initialize"
+	"mall-api/goods-web/utils/register/consul"
 	"os"
 	"os/signal"
 	"syscall"
@@ -31,9 +31,6 @@ func main() {
 	if err := initialize.InitTrans("zh"); err != nil {
 		panic(err)
 	}
-
-	// 初始化redis
-	initialize.InitRdsClient()
 
 	// init user-srv conn
 	initialize.InitSrvConn()

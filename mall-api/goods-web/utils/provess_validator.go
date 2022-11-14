@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 
-	"mall-api/user-web/global"
+	"mall-api/goods-web/global"
 )
 
 // RemoveTopStruct 处理验证器,返回msg

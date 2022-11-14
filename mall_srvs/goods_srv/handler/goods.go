@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"mall_srvs/goods_srv/global"
 	"mall_srvs/goods_srv/model"
@@ -126,18 +125,18 @@ func (s *GoodsServer) GoodsList(ctx context.Context, req *proto.GoodsFilterReque
 	case req.PagePerNums <= 0:
 		req.PagePerNums = 10
 	}
-	result, err := global.EsClient.Search().Index(model.EsGoods{}.GetIndexName()).Query(q).From(int(req.Pages)).Size(int(req.PagePerNums)).Do(context.Background())
-	if err != nil {
-		return nil, err
-	}
+	//result, err := global.EsClient.Search().Index(model.EsGoods{}.GetIndexName()).Query(q).From(int(req.Pages)).Size(int(req.PagePerNums)).Do(context.Background())
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	goodsIds := make([]int32, 0)
-	goodsListResponse.Total = int32(result.Hits.TotalHits.Value)
-	for _, value := range result.Hits.Hits {
-		goods := model.EsGoods{}
-		_ = json.Unmarshal(value.Source, &goods)
-		goodsIds = append(goodsIds, goods.ID)
-	}
+	//goodsListResponse.Total = int32(result.Hits.TotalHits.Value)
+	//for _, value := range result.Hits.Hits {
+	//	goods := model.EsGoods{}
+	//	_ = json.Unmarshal(value.Source, &goods)
+	//	goodsIds = append(goodsIds, goods.ID)
+	//}
 
 	//查询id在某个数组中的值
 	var goods []model.Goods
@@ -192,6 +191,7 @@ func (s *GoodsServer) CreateGoods(ctx context.Context, req *proto.CreateGoodsInf
 	//防止同一个token的数据重复插入到数据库中，如果redis中没有这个token则放入redis
 	//这里没有看到图片文件是如何上传， 在微服务中 普通的文件上传已经不再使用
 	goods := model.Goods{
+		Stocks:           req.Stocks,
 		Brands:           brand,
 		BrandsID:         brand.ID,
 		Category:         category,
