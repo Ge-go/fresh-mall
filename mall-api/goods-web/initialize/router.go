@@ -16,6 +16,12 @@ func Routers() *gin.Engine {
 	{
 		// goods server
 		router.InitGoodsRouter(apiGroup)
+		// category server
+		router.InitCategoryRouter(apiGroup)
+		// banner server
+		router.InitBannerRouter(apiGroup)
+		// brand server
+		router.InitBrandRouter(apiGroup)
 	}
 
 	return engine
