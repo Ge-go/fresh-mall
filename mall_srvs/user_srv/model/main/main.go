@@ -23,7 +23,7 @@ func genMd5(code string) string {
 
 // create database mall_user_srv CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
 func main() {
-	dsn := "root:w821230693@tcp(192.168.92.128:3306)/mall_user_srv?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:123123@tcp(192.168.92.128:3306)/mall_user_srv?charset=utf8mb4&parseTime=True&loc=Local"
 
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags),
