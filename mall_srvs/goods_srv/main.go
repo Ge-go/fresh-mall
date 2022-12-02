@@ -33,6 +33,9 @@ func main() {
 	// mysql
 	initialize.InitMySQL()
 
+	// init es
+	initialize.InitEs()
+
 	server := grpc.NewServer()
 	proto.RegisterGoodsServer(server, &handler.GoodsServer{})
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d",

@@ -3,6 +3,11 @@ package initialize
 import "go.uber.org/zap"
 
 func InitLogger() {
+	cfg := zap.NewProductionConfig()
+	cfg.OutputPaths = []string{
+		"./test.log",
+		"stderr",
+	}
 	logger, err := zap.NewDevelopment()
 	if err != nil {
 		panic("zap.NewDevelopment err:" + err.Error())
