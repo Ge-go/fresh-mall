@@ -29,13 +29,13 @@ func RegisterToConsul() (*api.Client, string) {
 		Address: global.ServerConfig.Host,
 		Tags:    global.ServerConfig.ConsulInfo.Tags,
 		// todo 暂时关闭测活
-		//Check: &api.AgentServiceCheck{
-		//	GRPC: fmt.Sprintf("%s:%d",
-		//		global.ServerConfig.Host, global.ServerConfig.Port),
-		//	Timeout:                        "5s",
-		//	Interval:                       "5s",
-		//	DeregisterCriticalServiceAfter: "15s",
-		//},
+		Check: &api.AgentServiceCheck{
+			GRPC: fmt.Sprintf("%s:%d",
+				global.ServerConfig.Host, global.ServerConfig.Port),
+			Timeout:                        "5s",
+			Interval:                       "5s",
+			DeregisterCriticalServiceAfter: "15s",
+		},
 	})
 
 	if err != nil {
