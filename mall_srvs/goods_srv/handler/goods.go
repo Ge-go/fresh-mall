@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"mall_srvs/goods_srv/global"
 	"mall_srvs/goods_srv/model"
@@ -125,18 +126,18 @@ func (s *GoodsServer) GoodsList(ctx context.Context, req *proto.GoodsFilterReque
 	case req.PagePerNums <= 0:
 		req.PagePerNums = 10
 	}
-	//result, err := global.EsClient.Search().Index(model.EsGoods{}.GetIndexName()).Query(q).From(int(req.Pages)).Size(int(req.PagePerNums)).Do(context.Background())
-	//if err != nil {
-	//	return nil, err
-	//}
+	result, err := global.EsClient.Search().Index(model.EsGoods{}.GetIndexName()).Query(q).From(int(req.Pages)).Size(int(req.PagePerNums)).Do(context.Background())
+	if err != nil {
+		return nil, err
+	}
 
 	goodsIds := make([]int32, 0)
-	//goodsListResponse.Total = int32(result.Hits.TotalHits.Value)
-	//for _, value := range result.Hits.Hits {
-	//	goods := model.EsGoods{}
-	//	_ = json.Unmarshal(value.Source, &goods)
-	//	goodsIds = append(goodsIds, goods.ID)
-	//}
+	goodsListResponse.Total = int32(result.Hits.TotalHits.Value)
+	for _, value := range result.Hits.Hits {
+		goods := model.EsGoods{}
+		_ = json.Unmarshal(value.Source, &goods)
+		goodsIds = append(goodsIds, goods.ID)
+	}
 
 	//查询id在某个数组中的值
 	var goods []model.Goods

@@ -9,6 +9,8 @@ mall_srvs/.idea/.gitignore
 *.dylib
 .DS_Store
 *.yaml
+*.iml
+*.xml
 
 # Test binary, built with `go test -c`
 *.test
