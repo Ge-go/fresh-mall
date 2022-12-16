@@ -338,7 +338,7 @@ func AutoReback(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.Co
 		//如果查询到那么逐个归还库存
 		for _, orderGood := range sellDetail.Detail {
 			//update怎么用
-			//先查询一下inventory表在， update语句的 update xx set stocks=stocks+2
+			//先查询一下inventory表在， update语句的 update xx set stocks=stocks+2  这种方式mysql是会锁行
 			if result := tx.Model(&model.Inventory{}).Where(&model.Inventory{Goods: orderGood.Goods}).Update("stocks", gorm.Expr("stocks+?", orderGood.Num)); result.RowsAffected == 0 {
 				tx.Rollback()
 				return consumer.ConsumeRetryLater, nil

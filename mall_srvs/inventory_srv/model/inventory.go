@@ -17,11 +17,13 @@ type GoodsDetail struct {
 }
 type GoodsDetailList []GoodsDetail
 
+// Value 这里,该字段入库的时候会进行json序列化
 func (g GoodsDetailList) Value() (driver.Value, error) {
 	return json.Marshal(g)
 }
 
-// 实现 sql.Scanner 接口，Scan 将 value 扫描至 Jsonb
+// Scan 实现 sql.Scanner 接口，Scan 将 value 扫描至 Jsonb
+// 当我再次取出来的时候,反序列化
 func (g *GoodsDetailList) Scan(value interface{}) error {
 	return json.Unmarshal(value.([]byte), &g)
 }

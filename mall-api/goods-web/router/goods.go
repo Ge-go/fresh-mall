@@ -8,7 +8,7 @@ import (
 )
 
 func InitGoodsRouter(Router *gin.RouterGroup) {
-	goodsRouter := Router.Group("goods")
+	goodsRouter := Router.Group("goods").Use(middleware.Trace())
 	{
 		goodsRouter.GET("list", goods.List)                                                      //获取用户列表
 		goodsRouter.POST("new", middleware.JWTAuth(), middleware.IsAdminAuth(), goods.New)       //新建商品

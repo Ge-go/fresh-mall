@@ -43,6 +43,18 @@ func OpenTracingClientInterceptor(tracer opentracing.Tracer, optFuncs ...Option)
 		var err error
 		var parentCtx opentracing.SpanContext
 
+		// 这里时将我们的父Span传递到rpc服务链路当中去
+		ginCtx := ctx.Value("ginContext")
+		switch ginCtx.(type) {
+		case *gin.Context:
+			if itracer, ok := ginCtx.(*gin.Context).Get("tracer"); ok {
+				tracer = itracer.(opentracing.Tracer)
+			}
+			if parentSpan, ok := ginCtx.(*gin.Context).Get("parentSpan"); ok {
+				parentCtx = parentSpan.(*jaegerClient.Span).Context()
+			}
+		}
+
 		if parent := opentracing.SpanFromContext(ctx); parent != nil {
 			parentCtx = parent.Context()
 		}

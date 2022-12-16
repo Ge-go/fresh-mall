@@ -2,6 +2,8 @@ package initialize
 
 import (
 	"fmt"
+	"github.com/opentracing/opentracing-go"
+	"mall-api/order-web/utils/otgrpc"
 
 	_ "github.com/mbobakov/grpc-consul-resolver" // It's important  负载均衡
 	"go.uber.org/zap"
@@ -17,6 +19,8 @@ func InitSrvConn() {
 			global.ServerConfig.ConsulInfo.Host, global.ServerConfig.ConsulInfo.Port, global.ServerConfig.GoodsSrvConfig.Name),
 		grpc.WithInsecure(),
 		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`), //均匀负载(轮询)
+		// tracer interceptor传递,如何解决获取父Span呢?
+		grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())),
 	)
 	if err != nil {
 		zap.S().Fatal("Init Srv Conn With get user Conn error:", err.Error())
