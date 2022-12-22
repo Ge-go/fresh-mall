@@ -35,6 +35,7 @@ func main() {
 	// init goods inventory srv
 	initialize.InitSrvConn()
 
+	// grpc.UnaryInterceptor(otgrpc.OpenTracingServerInterceptor())
 	server := grpc.NewServer()
 	proto.RegisterOrderServer(server, &proto.UnimplementedOrderServer{})
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d",
